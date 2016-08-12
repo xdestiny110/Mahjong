@@ -94,5 +94,58 @@ namespace Mahjong
             return 13 - terminals - ((completedTerminals == 0) ? 0 : 1);
         }
 
+
+        private static int melds = 0;
+        private static int jidahai = 0;
+        private static int number = 0;
+        private static int isolated = 0;
+        private static int pairs = 0;
+
+        public static int calculateShanten(byte[] tileArray)
+        {
+            init();
+
+            return 0;
+        }
+
+        private static void init()
+        {
+            melds = 0;
+            jidahai = 0;            
+            pairs = 0;
+        }
+
+        private static void calculateHornorTiles(byte[] tileArray)
+        {
+            int number = 0;
+            int isolated = 0;
+
+            for (int i = 27; i < 34; i++)
+            {
+                switch (tileArray[i])
+                {
+                    case 4:
+                        melds++;
+                        jidahai++;
+                        number |= 1 << (i - 27);
+                        isolated |= 1 << (i - 27);
+                        break;
+                    case 3:
+                        melds++;
+                        break;
+                    case 2:
+                        pairs++;
+                        break;
+                    case 1:
+                        isolated |= 1 << (i - 27);
+                        break;
+                }
+            }
+
+            jidahai = (jidahai > 0 && tileArray.Length % 3 == 2) ? jidahai + 1 : jidahai;
+
+
+        }
+
     }
 }
