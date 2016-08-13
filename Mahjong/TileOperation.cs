@@ -7,7 +7,7 @@ namespace Mahjong
 {
     public static class TileOperation
     {
-        //m is man, p is pin, s is sou, h1 is east, h2 is south, h3 is west, h4 is north, h5 is bai, h6 is fang, h7 is zhong
+        //m is man, p is pin, s is sou, h1 is east, h2 is south, h3 is west, h4 is north, h5 is white, h6 is green, h7 is red
         private static readonly Dictionary<char, int> tileDict = new Dictionary<char, int>()
         {
             {'m',0 },
@@ -89,7 +89,7 @@ namespace Mahjong
             int minShanten =
                 Math.Min(scanChitoitsu(tileArray), scanKokushi(tileArray));
             calculateHornorTiles(tileArray);
-            //tile that already chi, hon and ga
+            //tile that already chii, hon and ga
             int initMentsu = (int)Math.Floor((14 - tileCount) / 3.0);
 
 
@@ -146,5 +146,42 @@ namespace Mahjong
         {
 
         }
+
+        private enum TilesCombineType
+        {
+            Set, Pair, Syuntsu, Tatsu1, Tatsu2, Isolated
+        }
+
+        private static void typeOperation(ref int[] tileArr, int tileIdx, TilesCombineType type, int signFlag)
+        {
+            signFlag = Math.Sign(signFlag);
+            switch (type)
+            {
+                case TilesCombineType.Set:
+                    tileArr[tileIdx] += 3 * signFlag;
+                    melds += signFlag;
+                    break;
+                case TilesCombineType.Pair:
+                    tileArr[tileIdx] += 2 * signFlag;
+                    pairs += signFlag;
+                    break;
+                case TilesCombineType.Syuntsu:
+                    for(int i = tileIdx; i < tileIdx + 3; i++)
+                    {
+                        tileArr[i] += signFlag;
+                        melds += signFlag;
+                    }
+                    break;
+                case TilesCombineType.Tatsu1:
+                    break;
+                case TilesCombineType.Tatsu2:
+                    break;
+                case TilesCombineType.Isolated:
+                    break;
+                default:
+                    break;
+            }
+        }
+
     }
 }
