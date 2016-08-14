@@ -177,5 +177,17 @@ namespace MahjongTest
 
         }
 
+        [TestMethod]
+        public void calculateShanten_test()
+        {
+            string testStr = "";
+            int[] tileArray = null;
+            int excepted = 0;
+
+            testStr = "123m456p789s11122h";
+            excepted = -1;
+            TileOperation.tileStr2TileArray(testStr, out tileArray);
+            Assert.AreEqual(excepted, TileOperation.calculateShanten(tileArray), testStr + " test failed");
+        }
     }
 }

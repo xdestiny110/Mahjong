@@ -74,13 +74,14 @@ namespace Mahjong
             terminals += kokushiTable.Count(_ => tileArray[_] != 0);
             return 13 - terminals - ((completedTerminals == 0) ? 0 : 1);
         }
-
-
+        
         private static int melds = 0;
         private static int jidahai = 0;
-        private static int number = 0;
+        private static int characters = 0;
         private static int isolated = 0;
         private static int pairs = 0;
+        private static int tatsu = 0;
+        private static int shanten = 8;
 
         public static int calculateShanten(int[] tileArray)
         {
@@ -90,10 +91,15 @@ namespace Mahjong
                 Math.Min(scanChitoitsu(tileArray), scanKokushi(tileArray));
             calculateHornorTiles(tileArray);
             //tile that already chii, hon and ga
-            int initMentsu = (int)Math.Floor((14 - tileCount) / 3.0);
+            melds += (int)Math.Floor((14 - tileCount) / 3.0);
+            for(int i = 0; i < 27; i++)
+            {
+                if (tileArray[i] == 4)
+                    characters |= (1 << i);
+            }
 
-
-            return 0;
+            DFS(ref tileArray, 0);
+            return shanten;
         }
 
         private static void init()
@@ -101,8 +107,10 @@ namespace Mahjong
             melds = 0;
             jidahai = 0;
             pairs = 0;
-            number = 0;
+            characters = 0;
             isolated = 0;
+            tatsu = 0;
+            shanten = 8;
         }
 
         private static void calculateHornorTiles(int[] tileArray)
@@ -118,8 +126,8 @@ namespace Mahjong
                     case 4:
                         melds++;
                         jidahai++;
-                        _number |= 1 << (i - 27);
-                        _isolated |= 1 << (i - 27);
+                        _number |= (1 << (i - 27));
+                        _isolated |= (1 << (i - 27));
                         break;
                     case 3:
                         melds++;
@@ -128,7 +136,7 @@ namespace Mahjong
                         pairs++;
                         break;
                     case 1:
-                        _isolated |= 1 << (i - 27);
+                        _isolated |= (1 << (i - 27));
                         break;
                 }
             }
@@ -136,15 +144,161 @@ namespace Mahjong
             jidahai = (jidahai > 0 && tileArray.Length % 3 == 2) ? jidahai + 1 : jidahai;
             if (_isolated != 0)
             {
-                isolated |= 1 << 27;
+                isolated |= (1 << 27);
                 if ((_number | _isolated) == _number)
-                    number |= 1 << 27;
+                    characters |= (1 << 27);
             }
         }
 
-        private static void DFS(int depth)
+        private static void DFS(ref int[] tileArr,int depth)
         {
+            while (tileArr[depth] <= 0)
+            {
+                depth++;
+                if (depth >= 27)
+                    break;
+            }
 
+            //dfs end condition
+            if (depth >= 27)
+            {
+                int temp = 8 - melds * 2 - pairs;
+                int mentsuKouho = melds + tatsu;
+                if (pairs > 0)
+                    mentsuKouho += pairs - 1;
+                else
+                {
+                    if (characters > 0 && isolated > 0 && (characters | isolated) == characters)
+                        temp += 1;
+                }
+
+                if (mentsuKouho > 4)
+                    temp += mentsuKouho - 4;
+                if (temp >= 0 && temp < jidahai)
+                    temp = jidahai;
+
+                shanten = (shanten > temp) ? temp : shanten;
+                return;
+            }
+
+            switch (tileArr[depth])
+            {
+                case 4:
+                    tileTypeOperation(ref tileArr, depth, TilesCombineType.Set, 1);
+                    if (checkTatauPossible(tileArr, depth, depth + 1))
+                    {
+                        if (checkTatauPossible(tileArr, depth, depth + 2))
+                        {
+                            tileTypeOperation(ref tileArr, depth, TilesCombineType.Syuntsu, 1);
+                            DFS(ref tileArr, depth + 1);
+                            tileTypeOperation(ref tileArr, depth, TilesCombineType.Syuntsu, -1);
+                        }
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Tatsu1, 1);
+                        DFS(ref tileArr, depth + 1);
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Tatsu1, -1);
+                    }
+                    if (checkTatauPossible(tileArr, depth, depth + 2))
+                    {
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Tatsu2, 1);
+                        DFS(ref tileArr, depth + 1);
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Tatsu2, -1);
+                    }
+                    tileTypeOperation(ref tileArr, depth, TilesCombineType.Isolated, 1);
+                    DFS(ref tileArr, depth + 1);
+                    tileTypeOperation(ref tileArr, depth, TilesCombineType.Isolated, -1);
+                    tileTypeOperation(ref tileArr, depth, TilesCombineType.Set, -1);
+
+                    tileTypeOperation(ref tileArr, depth, TilesCombineType.Pair, 1);
+                    if (checkTatauPossible(tileArr, depth, depth + 1))
+                    {
+                        if (checkTatauPossible(tileArr, depth, depth + 2))
+                        {
+                            tileTypeOperation(ref tileArr, depth, TilesCombineType.Syuntsu, 1);
+                            DFS(ref tileArr, depth);
+                            tileTypeOperation(ref tileArr, depth, TilesCombineType.Syuntsu, -1);
+                        }
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Tatsu1, 1);
+                        DFS(ref tileArr, depth + 1);
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Tatsu1, -1);
+                    }
+                    if (checkTatauPossible(tileArr, depth, depth + 2))
+                    {
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Tatsu2, 1);
+                        DFS(ref tileArr, depth + 1);
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Tatsu2, -1);
+                    }
+                    tileTypeOperation(ref tileArr, depth, TilesCombineType.Pair, -1);
+                    break;
+                case 3:
+                    tileTypeOperation(ref tileArr, depth, TilesCombineType.Set, 1);
+                    DFS(ref tileArr, depth + 1);
+                    tileTypeOperation(ref tileArr, depth, TilesCombineType.Set, -1);
+
+                    tileTypeOperation(ref tileArr, depth, TilesCombineType.Pair, 1);
+                    if (checkTatauPossible(tileArr, depth, depth + 1))
+                    {
+                        if (checkTatauPossible(tileArr, depth, depth + 2))
+                        {
+                            tileTypeOperation(ref tileArr, depth, TilesCombineType.Syuntsu, 1);
+                            DFS(ref tileArr, depth);
+                            tileTypeOperation(ref tileArr, depth, TilesCombineType.Syuntsu, -1);
+                        }
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Tatsu1, 1);
+                        DFS(ref tileArr, depth + 1);
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Tatsu1, -1);
+                    }
+                    if (checkTatauPossible(tileArr, depth, depth + 2))
+                    {
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Tatsu2, 1);
+                        DFS(ref tileArr, depth + 1);
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Tatsu2, -1);
+                    }
+                    tileTypeOperation(ref tileArr, depth, TilesCombineType.Pair, -1);
+
+                    if (checkTatauPossible(tileArr, depth, depth + 1) &&
+                        checkTatauPossible(tileArr, depth, depth + 2) &&
+                        tileArr[depth + 1] >= 2 && tileArr[depth + 2] >= 2)
+                    {
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Syuntsu, 2);
+                        DFS(ref tileArr, depth);
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Syuntsu, -2);
+                    }
+                    break;
+                case 2:
+                    tileTypeOperation(ref tileArr, depth, TilesCombineType.Pair, 1);
+                    DFS(ref tileArr, depth + 1);
+                    tileTypeOperation(ref tileArr, depth, TilesCombineType.Pair, -1);
+                    if(checkTatauPossible(tileArr, depth,depth+1) && checkTatauPossible(tileArr, depth, depth + 2))
+                    {
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Syuntsu, 1);
+                        DFS(ref tileArr, depth);
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Syuntsu, -1);
+                    }
+                    break;
+                case 1:
+                    if (checkTatauPossible(tileArr, depth, depth + 1))
+                    {
+                        if (checkTatauPossible(tileArr, depth, depth + 2))
+                        {
+                            tileTypeOperation(ref tileArr, depth, TilesCombineType.Syuntsu, 1);
+                            DFS(ref tileArr, depth + 1);
+                            tileTypeOperation(ref tileArr, depth, TilesCombineType.Syuntsu, -1);
+                        }
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Tatsu1, 1);
+                        DFS(ref tileArr, depth + 1);
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Tatsu1, -1);
+                    }
+                    if (checkTatauPossible(tileArr, depth, depth + 2))
+                    {
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Tatsu2, 1);
+                        DFS(ref tileArr, depth + 1);
+                        tileTypeOperation(ref tileArr, depth, TilesCombineType.Tatsu2, -1);
+                    }
+                    tileTypeOperation(ref tileArr, depth, TilesCombineType.Isolated, 1);
+                    DFS(ref tileArr, depth + 1);
+                    tileTypeOperation(ref tileArr, depth, TilesCombineType.Isolated, -1);
+                    break;
+            }
         }
 
         private enum TilesCombineType
@@ -152,7 +306,7 @@ namespace Mahjong
             Set, Pair, Syuntsu, Tatsu1, Tatsu2, Isolated
         }
 
-        private static void typeOperation(ref int[] tileArr, int tileIdx, TilesCombineType type, int signFlag)
+        private static void tileTypeOperation(ref int[] tileArr, int tileIdx, TilesCombineType type, int signFlag)
         {
             signFlag = Math.Sign(signFlag);
             switch (type)
@@ -165,22 +319,34 @@ namespace Mahjong
                     tileArr[tileIdx] += 2 * signFlag;
                     pairs += signFlag;
                     break;
-                case TilesCombineType.Syuntsu:
-                    for(int i = tileIdx; i < tileIdx + 3; i++)
-                    {
-                        tileArr[i] += signFlag;
-                        melds += signFlag;
-                    }
+                case TilesCombineType.Syuntsu:                   
+                    tileArr[tileIdx] += signFlag;
+                    tileArr[tileIdx+1] += signFlag;
+                    tileArr[tileIdx+2] += signFlag;
+                    melds += signFlag;
                     break;
                 case TilesCombineType.Tatsu1:
+                    tileArr[tileIdx] += signFlag;
+                    tileArr[tileIdx + 1] += signFlag;
+                    tatsu += signFlag;
                     break;
                 case TilesCombineType.Tatsu2:
+                    tileArr[tileIdx] += signFlag;
+                    tileArr[tileIdx + 2] += signFlag;
+                    tatsu += signFlag;
                     break;
                 case TilesCombineType.Isolated:
+                    tileArr[tileIdx] += signFlag;
+                    isolated |= (1 << tileIdx);
                     break;
                 default:
                     break;
             }
+        }
+
+        private static bool checkTatauPossible(int[] tileArr ,int idx1, int idx2)
+        {
+            return (idx1 < idx2 && idx1 % 9 < idx2 % 9 && tileArr[idx1] > 0 && tileArr[idx2] > 0);
         }
 
     }
