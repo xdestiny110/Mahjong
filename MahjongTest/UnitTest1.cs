@@ -25,6 +25,12 @@ namespace MahjongTest
             TileOperation.tileStr2TileArray(testStr, out actual);
             CollectionAssert.AreEqual(excepted, actual, testStr + " test failed");
 
+            testStr = "11112233m";
+            excepted = new int[34];
+            excepted[0] = 4;excepted[1] = 2;excepted[2] = 2;
+            TileOperation.tileStr2TileArray(testStr, out actual);
+            CollectionAssert.AreEqual(excepted, actual, testStr + " test failed");
+
             testStr = "11234m56p789s1117h";
             excepted = new int[34];
             excepted[0] = 2; excepted[1] = 1; excepted[2] = 1; excepted[3] = 1;
@@ -188,6 +194,62 @@ namespace MahjongTest
             excepted = -1;
             TileOperation.tileStr2TileArray(testStr, out tileArray);
             Assert.AreEqual(excepted, TileOperation.calculateShanten(tileArray), testStr + " test failed");
+
+            testStr = "11112233m";
+            excepted = -1;
+            TileOperation.tileStr2TileArray(testStr, out tileArray);
+            Assert.AreEqual(excepted, TileOperation.calculateShanten(tileArray), testStr + " test failed");
+
+            testStr = "1144p5577m4466s33h";
+            excepted = -1;
+            TileOperation.tileStr2TileArray(testStr, out tileArray);
+            Assert.AreEqual(excepted, TileOperation.calculateShanten(tileArray), testStr + " test failed");
+
+            testStr = "19m19p19s12334567h";
+            excepted = -1;
+            TileOperation.tileStr2TileArray(testStr, out tileArray);
+            Assert.AreEqual(excepted, TileOperation.calculateShanten(tileArray), testStr + " test failed");
+
+            testStr = "22233m123s456789p";
+            excepted = -1;
+            TileOperation.tileStr2TileArray(testStr, out tileArray);
+            Assert.AreEqual(excepted, TileOperation.calculateShanten(tileArray), testStr + " test failed");
+
+            testStr = "11123456788999p";
+            excepted = -1;
+            TileOperation.tileStr2TileArray(testStr, out tileArray);
+            Assert.AreEqual(excepted, TileOperation.calculateShanten(tileArray), testStr + " test failed");
+
+            testStr = "11122245679999s";
+            excepted = 0;
+            TileOperation.tileStr2TileArray(testStr, out tileArray);
+            Assert.AreEqual(excepted, TileOperation.calculateShanten(tileArray), testStr + " test failed");
+
+            testStr = "233789m456s111p11h";
+            excepted = 0;
+            TileOperation.tileStr2TileArray(testStr, out tileArray);
+            Assert.AreEqual(excepted, TileOperation.calculateShanten(tileArray), testStr + " test failed");
+
+            testStr = "111345677m15s456s";
+            excepted = 1;
+            TileOperation.tileStr2TileArray(testStr, out tileArray);
+            Assert.AreEqual(excepted, TileOperation.calculateShanten(tileArray), testStr + " test failed");
+
+            testStr = "11345677m159s456p";
+            excepted = 2;
+            TileOperation.tileStr2TileArray(testStr, out tileArray);
+            Assert.AreEqual(excepted, TileOperation.calculateShanten(tileArray), testStr + " test failed");
+
+            testStr = "1589m1358s13588p4h";
+            excepted = 5;
+            TileOperation.tileStr2TileArray(testStr, out tileArray);
+            Assert.AreEqual(excepted, TileOperation.calculateShanten(tileArray), testStr + " test failed");
+
+            testStr = "1589m1358s258p457h";
+            excepted = 6;
+            TileOperation.tileStr2TileArray(testStr, out tileArray);
+            Assert.AreEqual(excepted, TileOperation.calculateShanten(tileArray), testStr + " test failed");
+
         }
     }
 }

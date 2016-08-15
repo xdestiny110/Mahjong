@@ -14,7 +14,7 @@ namespace Mahjong
             {'p',9 },
             {'s',18 },
             {'h',27 },
-        };
+        };        
 
         /// <summary>
         /// Change string to int[]
@@ -54,7 +54,7 @@ namespace Mahjong
         {
             //check chitoitsu
             if (tileArray.Aggregate((sum, v) => sum + v) != 14)
-                throw new MahjongException(MahjongErrorCode.TilesNumError);
+                return 100;
 
             int completed_pairs = 0, pairs = 0;
             completed_pairs += tileArray.Count(_ => _ >= 2);
@@ -66,7 +66,7 @@ namespace Mahjong
         {
             //check kokushi
             if (tileArray.Aggregate((sum, v) => sum + v) != 14)
-                throw new MahjongException(MahjongErrorCode.TilesNumError);
+                return 100;
 
             HashSet<int> kokushiTable = new HashSet<int>() { 0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33 };
             int completedTerminals = 0, terminals = 0; ;
@@ -99,7 +99,7 @@ namespace Mahjong
             }
 
             DFS(ref tileArray, 0);
-            return shanten;
+            return Math.Min(shanten,minShanten);
         }
 
         private static void init()
@@ -312,31 +312,31 @@ namespace Mahjong
             switch (type)
             {
                 case TilesCombineType.Set:
-                    tileArr[tileIdx] += 3 * signFlag;
+                    tileArr[tileIdx] -= 3 * signFlag;
                     melds += signFlag;
                     break;
                 case TilesCombineType.Pair:
-                    tileArr[tileIdx] += 2 * signFlag;
+                    tileArr[tileIdx] -= 2 * signFlag;
                     pairs += signFlag;
                     break;
                 case TilesCombineType.Syuntsu:                   
-                    tileArr[tileIdx] += signFlag;
-                    tileArr[tileIdx+1] += signFlag;
-                    tileArr[tileIdx+2] += signFlag;
+                    tileArr[tileIdx] -= signFlag;
+                    tileArr[tileIdx+1] -= signFlag;
+                    tileArr[tileIdx+2] -= signFlag;
                     melds += signFlag;
                     break;
                 case TilesCombineType.Tatsu1:
-                    tileArr[tileIdx] += signFlag;
-                    tileArr[tileIdx + 1] += signFlag;
+                    tileArr[tileIdx] -= signFlag;
+                    tileArr[tileIdx + 1] -= signFlag;
                     tatsu += signFlag;
                     break;
                 case TilesCombineType.Tatsu2:
-                    tileArr[tileIdx] += signFlag;
-                    tileArr[tileIdx + 2] += signFlag;
+                    tileArr[tileIdx] -= signFlag;
+                    tileArr[tileIdx + 2] -= signFlag;
                     tatsu += signFlag;
                     break;
                 case TilesCombineType.Isolated:
-                    tileArr[tileIdx] += signFlag;
+                    tileArr[tileIdx] -= signFlag;
                     isolated |= (1 << tileIdx);
                     break;
                 default:
