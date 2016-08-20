@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Mahjong
@@ -21,7 +22,7 @@ namespace Mahjong
         /// </summary>
         /// <param name="tileStr">input string. Such as 123p456m789s11122h</param>
         /// <param name="tileArray">tile represent as int[]</param>
-        public static void tileStr2TileArray(string tileStr, out int[] tileArray)
+        public static void TileStr2TileArray(string tileStr, out int[] tileArray)
         {
             Regex r1 = new Regex("[1-9]"), r2 = new Regex("[msph]");
             if (!r1.IsMatch(tileStr) || !r2.IsMatch(tileStr))
@@ -43,14 +44,11 @@ namespace Mahjong
                 index = match.Index + 1;
             }
 
-            if (tileNum < 2 || tileNum > 14 || (tileNum - 2) % 3 != 0)
-                throw new MahjongException(MahjongErrorCode.TilesNumError);
-
             if (tileArray.Any(_ => _ > 4))
                 throw new MahjongException(MahjongErrorCode.TilesNumError);
         }
 
-        public static int scanChitoitsu(int[] tileArray)
+        public static int ScanChitoitsu(int[] tileArray)
         {
             //check chitoitsu
             if (tileArray.Aggregate((sum, v) => sum + v) != 14)
@@ -62,7 +60,7 @@ namespace Mahjong
             return (6 - completed_pairs + ((pairs < 7) ? 7 - pairs : 0));
         }
 
-        public static int scanKokushi(int[] tileArray)
+        public static int ScanKokushi(int[] tileArray)
         {
             //check kokushi
             if (tileArray.Aggregate((sum, v) => sum + v) != 14)
@@ -74,6 +72,47 @@ namespace Mahjong
             terminals += kokushiTable.Count(_ => tileArray[_] != 0);
             return 13 - terminals - ((completedTerminals == 0) ? 0 : 1);
         }
+
+        public static void MergeTileArr(ref int[] tileArr1, int[] tileArr2, bool isPlus)
+        {
+            int sign = (isPlus) ? 1 : -1;
+            for (int i = 0; i < tileArr2.Length; i++)
+            {
+                if (tileArr2[i] != 0)
+                    tileArr1[i] += tileArr2[i] * sign;
+            }
+
+            var tileNum = tileArr1.Aggregate((sum, v) => { return sum + v; });
+            if (tileNum > 14 || tileNum < 1 || tileArr1.Any(_ => { return _ > 4 || _ < 0; }))
+                throw new MahjongException(MahjongErrorCode.TilesNumError);
+
+        }
+
+        public static string TileArr2String(int[] tileArr)
+        {
+            if (tileArr == null || !tileArr.Any(_ => { return _ > 0 && _ <= 4; }))
+                throw new MahjongException(MahjongErrorCode.TilesNumError);
+
+            StringBuilder result = new StringBuilder();
+            for(int i = 0; i < tileArr.Length; i++)
+            {
+                if (i == 9 && !string.IsNullOrEmpty(result.ToString()) && result[result.Length - 1] >= '1' && result[result.Length - 1] <= '9')
+                    result.Append('m');
+                if (i == 18 && !string.IsNullOrEmpty(result.ToString()) && result[result.Length - 1] >= '1' && result[result.Length - 1] <= '9')
+                    result.Append('p');
+                if (i == 27 && !string.IsNullOrEmpty(result.ToString()) && result[result.Length - 1] >= '1' && result[result.Length - 1] <= '9')
+                    result.Append('s');
+
+                for (int j = 0; j < tileArr[i]; j++)
+                    result.Append(i % 9 + 1);
+            }
+
+            var ch = result[result.Length - 1];
+            if (ch >= '1' && ch <= '7')
+                result.Append('h');
+
+            return result.ToString();
+        }
         
         private static int melds = 0;
         private static int jidahai = 0;
@@ -83,12 +122,12 @@ namespace Mahjong
         private static int tatsu = 0;
         private static int shanten = 8;
 
-        public static int calculateShanten(int[] tileArray)
+        public static int CalculateShanten(int[] tileArray)
         {
             init();
             int tileCount = tileArray.Aggregate((sum, v) => sum + v);
             int minShanten =
-                Math.Min(scanChitoitsu(tileArray), scanKokushi(tileArray));
+                Math.Min(ScanChitoitsu(tileArray), ScanKokushi(tileArray));
             calculateHornorTiles(tileArray);
             //tile that already chii, hon and ga
             melds += (int)Math.Floor((14 - tileCount) / 3.0);

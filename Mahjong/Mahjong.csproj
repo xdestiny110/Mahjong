@@ -42,7 +42,7 @@
   <ItemGroup>
     <Compile Include="TileOperation.cs" />
     <Compile Include="MahjongException.cs" />
-    <Compile Include="TileModel.cs" />
+    <Compile Include="PlayerModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
