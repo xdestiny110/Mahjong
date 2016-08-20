@@ -47,12 +47,23 @@ namespace Mahjong
             
             for(int i = 0; i < 34; i++)
             {
+                if (tiles[i] == 0) continue;
+                tiles[i]--;
                 for(int j = 0; j < 34; j++)
                 {
                     if (i == j) continue;
 
-
+                    tiles[j]++;
+                    int shantenTemp = TileOperation.CalculateShanten(tiles);
+                    if (shantenTemp < shantenNow)
+                    {
+                        if (calculateResult[i] == null)
+                            calculateResult[i] = new List<int>();
+                        calculateResult[i].Add(j);
+                    }
+                    tiles[j]--;
                 }
+                tiles[i]++;
             }
 
             return 0;

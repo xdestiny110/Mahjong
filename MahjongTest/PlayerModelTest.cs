@@ -24,8 +24,10 @@ namespace MahjongTest
             CollectionAssert.AreEqual(excepted, player.Tiles);
         }
 
+        [TestMethod]
+        public void PlayerModelCalculate_Test()
+        {
 
-
-
+        }
     }
 }
